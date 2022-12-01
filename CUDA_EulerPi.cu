@@ -20,55 +20,62 @@
 #include <math.h>
 #include <cuda.h>
 
-#define N 1000000000
+const long MAX_N = 394656595L;
+const long N = 394656595L;
+const long N2 = N*N;
 
-__global__ void eulerPi(double *pi, double *sum, int n) {
+__global__ void eulerPi(long *sum, long *sums, int n) {
   int i, tid = threadIdx.x + blockIdx.x * blockDim.x;
-  double h = 1.0 / n;
+
 
   for (i = tid; i < n; i += blockDim.x * gridDim.x) {
-    sum[tid] += 4.0 / (1.0 + ((i + 0.5) * h) * ((i + 0.5) * h));
+    if (i != 0)
+      sums[tid] += N2 / (i * i);
   }
   __syncthreads();
 
   if (tid == 0) {
     for (i = 0; i < blockDim.x * gridDim.x; i++) {
-      *pi += sum[i];
+      *pi += sums[i];
     }
     *pi *= h;
   }
 }
 
 int main(int argc, char* argv[]) {
-  double *pi, *sum, *d_pi, *d_sum;
+  long *sum, *sums, *d_sum, *d_sums;
   int i, blockSize, gridSize;
+  double pi;
 
   // allocate memory
-  pi = (double *) malloc(sizeof(double));
-  sum = (double *) malloc(sizeof(double) * 1024);
-  cudaMalloc((void **) &d_pi, sizeof(double));
-  cudaMalloc((void **) &d_sum, sizeof(double) * 1024);
+  sum = (long *) malloc(sizeof(long));
+  sums = (long *) malloc(sizeof(long) * 1024);
+  cudaMalloc((void **) &d_sum, sizeof(long));
+  cudaMalloc((void **) &d_sums, sizeof(long) * 1024);
 
   // initialize variables
-  *pi = 0;
+  *sum = 0;
   for (i = 0; i < 1024; i++) {
-    sum[i] = 0;
+    sums[i] = 0;
   }
 
   // copy data to device
-  cudaMemcpy(d_pi, pi, sizeof(double), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sum, sum, sizeof(double) * 1024, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sum, sum, sizeof(long), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sums, sums, sizeof(long) * 1024, cudaMemcpyHostToDevice);
 
   // calculate pi
   blockSize = 1024;
   gridSize = (N + blockSize - 1) / blockSize;
-  eulerPi<<<gridSize, blockSize>>>(d_pi, d_sum, N);
+  eulerPi<<<gridSize, blockSize>>>(d_sum d_sums, N);
 
   // copy data back to host
-  cudaMemcpy(pi, d_pi, sizeof(double), cudaMemcpyDeviceToHost);
+  cudaMemcpy(sum, d_sum, sizeof(long), cudaMemcpyDeviceToHost);
+
+  // calculate last step of pi
+  pi = sqrt((double)(6 * *sum) / N2);
 
   // print results
-  printf("pi = %lf (error = %lf) \n", *pi, fabs(*pi - M_PI));
+  printf("pi = %lf", *pi);
 
   // free memory
   free(pi);
