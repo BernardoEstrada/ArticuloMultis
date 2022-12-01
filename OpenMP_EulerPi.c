@@ -15,7 +15,6 @@
 //
 // =================================================================
 
-// implement euler's method to calculate pi using openmp
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
