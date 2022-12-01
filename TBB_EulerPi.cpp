@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <math.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 
