@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iomanip>
 #include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
 
 using namespace std;
 using namespace tbb;
@@ -28,12 +29,24 @@ const long MAX_N = 394656595L;
 const long N = 394656595L;
 const long N2 = N*N;
 
+class EulerPi {
+private:
+  long *sum;
+public:
+  EulerPi(long *sum) : sum(sum) { }
+  void operator()(const blocked_range<long> &r) const {
+    long local_sum = 0.0;
+    for (long i = r.begin(); i != r.end(); i++) {
+      if (i != 0)
+        local_sum += N2 / (i * i);
+    }
+    *sum += local_sum;
+  }
+};
+
 double eulerPi() {
   long sum = 0;
-  parallel_for(0, N, 1, [&sum](int i) {
-    if (i == 0) continue;
-    sum += N2 / (i * i);
-  });
+  parallel_for(blocked_range<long>(0, N), EulerPi(&sum));
   return sum;
 }
 
