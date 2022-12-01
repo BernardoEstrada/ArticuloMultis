@@ -71,6 +71,7 @@ public class Threads_EulerPi {
     }
 
 
+    System.out.printf("sum = %f %n", (double)(6 * sum(threads))/N2);
     pi = Math.sqrt((double)(6 * sum(threads))/N2);
     System.out.printf("pi = %.10f %n", pi);
   }

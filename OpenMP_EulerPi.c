@@ -25,7 +25,7 @@
 #define N 394656595L
 
 int main(int argc, char* argv[]) {
-  const double N2 = N*N;
+  const long N2 = N*N;
   double pi;
   long sum = 0;
   long i;
