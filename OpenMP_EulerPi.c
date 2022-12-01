@@ -21,17 +21,17 @@
 #include <math.h>
 #include <omp.h>
 
-#define MAX_N 394656595
-#define N 394656595
-#define N2 N*N
+#define MAX_N 394656595L
+#define N 394656595L
 
 int main(int argc, char* argv[]) {
+  const double N2 = N*N;
   double pi;
   long sum = 0;
   long i;
 
   if (N > MAX_N) {
-    printf("N must be <= %d (MAX_N)\n", MAX_N);
+    printf("N must be <= %ld (MAX_N)\n", MAX_N);
     exit(1);
   }
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     if (i == 0) continue;
     sum += N2 / (i * i);
   }
-  pi = math.sqrt((double)(6 * sum)/N2);
+  pi = sqrt((double)(6 * sum)/N2);
   printf("pi = %lf\n", pi);
   return 0;
 }
